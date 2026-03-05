@@ -12,8 +12,22 @@ model User {
   email     String   @unique
   name      String?
   password  String
+  role      Role     @default(USER)
   logs      Log[]
   createdAt DateTime @default(now())
+}
+
+model AuthRateLimit {
+  id          String   @id @default(cuid())
+  action      String
+  key         String
+  count       Int
+  windowStart DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([action, key])
+  @@index([updatedAt])
 }
 
 model Log {
@@ -25,4 +39,9 @@ model Log {
   createdAt DateTime @default(now())
 
   @@index([userId, date])
+}
+
+enum Role {
+  ADMIN
+  USER
 }

@@ -29,6 +29,14 @@ bun install
 cp .env.example .env
 ```
 
+建議至少設定以下值（Vercel 也要同步）：
+
+- `NEXTAUTH_SECRET`：長隨機字串
+- `AUTH_ALLOW_PUBLIC_REGISTRATION=false`：預設關閉公開註冊
+- `AUTH_INVITE_CODE`：註冊邀請碼
+- `BOOTSTRAP_ADMIN_EMAIL` / `BOOTSTRAP_ADMIN_PASSWORD`：首次自動建立管理員帳號
+- `AUTH_RATE_LIMIT_WINDOW_SECONDS` / `AUTH_RATE_LIMIT_MAX_ATTEMPTS`：登入與註冊限流
+
 3. 初始化資料庫
 
 ```bash
@@ -57,3 +65,9 @@ bun run dev
 bun run build
 bun run start
 ```
+
+## 安全預設（適合先上線）
+
+- 預設關閉公開註冊，註冊需邀請碼。
+- 若資料庫內尚無 `ADMIN`，系統會用 `BOOTSTRAP_ADMIN_*` 建立一次管理員。
+- 登入與註冊有基礎 rate limit（依 email key）。

@@ -2,6 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { assertRateLimit, ensureBootstrapAdmin } from "@/lib/auth-security";
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -13,12 +14,20 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        await ensureBootstrapAdmin();
+
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
+        const email = credentials.email.toLowerCase();
+        const rateLimitPassed = await assertRateLimit("login", email);
+        if (!rateLimitPassed) {
+          return null;
+        }
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email.toLowerCase() },
+          where: { email },
         });
 
         if (!user) {
@@ -34,6 +43,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
+          role: user.role,
         };
       },
     }),
@@ -42,12 +52,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.role = user.role;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.role = token.role as "ADMIN" | "USER";
       }
       return session;
     },

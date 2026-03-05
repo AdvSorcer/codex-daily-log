@@ -11,7 +11,7 @@ export default function LoginPage() {
         <LoginForm />
 
         <p className="mt-4 text-sm text-slate-600">
-          還沒有帳號？ <Link href="/register" className="underline">前往註冊</Link>
+          還沒有帳號？ <Link href="/register" className="underline">前往註冊（需邀請碼）</Link>
         </p>
       </div>
     </main>
